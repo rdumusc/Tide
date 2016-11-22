@@ -37,81 +37,55 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#ifndef RESTINTERFACE_H
-#define RESTINTERFACE_H
+#include "JsonImage.h"
 
-#include "types.h"
+#include "jsonschema.h"
 
-#include "JsonSize.h"
-#include "RestLogger.h"
+#include <QBuffer>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QPixmap>
 
-#include <QObject>
-
-/**
- * Enables remote control of Tide through a REST API.
- *
- * It listens for http PUT requests on 'http://hostname:port/tide/\<command\>'
- * and emits the corresponding \<command\> signal on success.
- *
- * Example command:
- * curl -i -X PUT -d '{"uri": "image.png"}' http://localhost:8888/tide/open
- *
- * It also exposes a simple html index page on 'http://hostname:port/tide'.
- */
-class RestInterface : public QObject
+QString _toBase64( const QImage& image )
 {
-    Q_OBJECT
+    QByteArray data;
+    QBuffer buffer{ &data };
+    buffer.open( QIODevice::WriteOnly );
+    QPixmap::fromImage( image ).save( &buffer, "JPG" );
+    buffer.close();
+    return QString::fromLatin1( data.toBase64( ));
+}
 
-public:
-    /**
-     * Construct a REST interface.
-     * @param port the port for listening to REST requests
-     * @param options the application's options to expose in the interface
-     * @param config the application's configuration
-     * @throw std::runtime_error if the port is already in use or a connection
-     *        issue occured.
-     */
-    RestInterface( int port, OptionsPtr options,
-                   const MasterConfiguration& config );
+QJsonObject _makeJsonObject( const QImage& image )
+{
+    QJsonObject obj;
+    obj.insert( "data", _toBase64( image ));
+    return obj;
+}
 
-    /** Out-of-line destructor. */
-    ~RestInterface();
+JsonImage::JsonImage( const std::string& name, const QImage& image )
+    : _name( name )
+    , _image( image )
+{}
 
-    /** Expose the statistics gathered by the given logging utility. */
-    void exposeStatistics( const LoggingUtility& logger ) const;
+void JsonImage::set( const QImage& image )
+{
+    _image = image;
+}
 
-public slots:
-    /** Set the image to expose. */
-    void setImage( QImage image );
+std::string JsonImage::getTypeName() const
+{
+    return _name;
+}
 
-signals:
-    /** Open a content. */
-    void open( QString uri );
+std::string JsonImage::getSchema() const
+{
+    return jsonschema::create( "ImageJPEG", _makeJsonObject( _image ),
+                               "View of the display wall" );
+}
 
-    /** Load a session. */
-    void load( QString uri );
-
-    /** Save a session to the given file. */
-    void save( QString uri );
-
-    /** Clear all contents. */
-    void clear();
-
-    /** Open a whiteboard. */
-    void whiteboard();
-
-    /** Browse a website. */
-    void browse( QString uri );
-
-    /** Take a screenshot. */
-    void screenshot( QString uri );
-
-    /** Exit the application. */
-    void exit();
-
-private:
-    class Impl;
-    std::unique_ptr<Impl> _impl;
-};
-
-#endif
+std::string JsonImage::_toJSON() const
+{
+    return QJsonDocument{ _makeJsonObject( _image ) }.toJson().toStdString();
+}

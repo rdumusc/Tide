@@ -37,81 +37,41 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#ifndef RESTINTERFACE_H
-#define RESTINTERFACE_H
+#ifndef JSONIMAGE_H
+#define JSONIMAGE_H
 
-#include "types.h"
+#include <servus/serializable.h> // base class
 
-#include "JsonSize.h"
-#include "RestLogger.h"
-
-#include <QObject>
+#include <QImage>
 
 /**
- * Enables remote control of Tide through a REST API.
- *
- * It listens for http PUT requests on 'http://hostname:port/tide/\<command\>'
- * and emits the corresponding \<command\> signal on success.
- *
- * Example command:
- * curl -i -X PUT -d '{"uri": "image.png"}' http://localhost:8888/tide/open
- *
- * It also exposes a simple html index page on 'http://hostname:port/tide'.
+ * Exposes a JPEG image in JSON to the REST interface.
  */
-class RestInterface : public QObject
+class JsonImage : public servus::Serializable
 {
-    Q_OBJECT
-
 public:
     /**
-     * Construct a REST interface.
-     * @param port the port for listening to REST requests
-     * @param options the application's options to expose in the interface
-     * @param config the application's configuration
-     * @throw std::runtime_error if the port is already in use or a connection
-     *        issue occured.
+     * Constructor.
+     *
+     * @param name the name of the image.
+     * @param image the image to expose.
      */
-    RestInterface( int port, OptionsPtr options,
-                   const MasterConfiguration& config );
+    explicit JsonImage( const std::string& name, const QImage& image );
 
-    /** Out-of-line destructor. */
-    ~RestInterface();
+    /**
+     * Update the image.
+     * @param image the new image to expose.
+     */
+    void set( const QImage& image );
 
-    /** Expose the statistics gathered by the given logging utility. */
-    void exposeStatistics( const LoggingUtility& logger ) const;
-
-public slots:
-    /** Set the image to expose. */
-    void setImage( QImage image );
-
-signals:
-    /** Open a content. */
-    void open( QString uri );
-
-    /** Load a session. */
-    void load( QString uri );
-
-    /** Save a session to the given file. */
-    void save( QString uri );
-
-    /** Clear all contents. */
-    void clear();
-
-    /** Open a whiteboard. */
-    void whiteboard();
-
-    /** Browse a website. */
-    void browse( QString uri );
-
-    /** Take a screenshot. */
-    void screenshot( QString uri );
-
-    /** Exit the application. */
-    void exit();
+    std::string getTypeName() const final;
+    std::string getSchema() const final;
 
 private:
-    class Impl;
-    std::unique_ptr<Impl> _impl;
+    const std::string _name;
+    QImage _image;
+
+    std::string _toJSON() const final;
 };
 
 #endif

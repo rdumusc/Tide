@@ -39,6 +39,7 @@
 
 #include "RestInterface.h"
 
+#include "JsonImage.h"
 #include "JsonOptions.h"
 #include "MasterConfiguration.h"
 #include "RestCommand.h"
@@ -109,6 +110,7 @@ public:
     JsonOptions options;
     JsonSize sizeProperty;
     std::unique_ptr<RestLogger> logContent;
+    std::unique_ptr<JsonImage> image;
 };
 
 RestInterface::RestInterface( const int port, OptionsPtr options,
@@ -152,4 +154,16 @@ void RestInterface::exposeStatistics( const LoggingUtility& logger ) const
 {
     _impl->logContent.reset( new RestLogger( logger ));
     _impl->httpServer.get().handleGET( *(_impl->logContent.get( )));
+}
+
+void RestInterface::setImage( const QImage image )
+{
+    if( _impl->image )
+    {
+        _impl->image->set( image );
+        return;
+    }
+
+    _impl->image = make_unique<JsonImage>( "tide/image_jpeg", image );
+    _impl->httpServer.get().handleGET( *_impl->image );
 }

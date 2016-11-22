@@ -79,6 +79,8 @@ class Options : public QObject, public boost::enable_shared_from_this<Options>
                 NOTIFY showWindowTitlesChanged )
     Q_PROPERTY( bool showZoomContext READ getShowZoomContext
                 NOTIFY showZoomContextChanged )
+    Q_PROPERTY( QColor backgroundColor READ getBackgroundColor
+                NOTIFY backgroundColorChanged )
 
 public:
     /** Default constructor */
@@ -166,6 +168,7 @@ signals:
     void showWindowBordersChanged( bool set );
     void showWindowTitlesChanged( bool set );
     void showZoomContextChanged( bool set );
+    void backgroundColorChanged();
     //@}
 
     /** Emitted when any value is changed by one of the setters. */

@@ -232,7 +232,7 @@ void MasterApplication::_initOffscreenView()
 {
     _offscreenQuickView.reset( new deflect::qt::OffscreenQuickView{
                                    make_unique<QQuickRenderControl>(),
-                                   deflect::qt::RenderMode::DISABLED } );
+                                   deflect::qt::RenderMode::MULTITHREADED } );
     _offscreenQuickView->getRootContext()->setContextProperty( "options",
                                                                _options.get( ));
     _offscreenQuickView->load( QML_OFFSCREEN_ROOT_COMPONENT ).wait();
@@ -472,6 +472,13 @@ void MasterApplication::_initRestInterface()
            _logger.get(), &LoggingUtility::contentWindowMovedToFront );
 
     _restInterface.get()->exposeStatistics( *(_logger.get()) );
+
+    if( _offscreenQuickView )
+    {
+        connect( _offscreenQuickView.get(),
+                 &deflect::qt::OffscreenQuickView::afterRender,
+                 _restInterface.get(), &RestInterface::setImage );
+    }
 }
 #endif
 

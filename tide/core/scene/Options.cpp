@@ -246,6 +246,7 @@ void Options::setBackgroundColor( const QColor color )
         return;
 
     _backgroundColor = color;
+    emit backgroundColorChanged();
     emit updated( shared_from_this( ));
 }
 
