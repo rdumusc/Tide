@@ -152,6 +152,7 @@ if(TIDE_ENABLE_REST_INTERFACE)
     rest/RestLogger.h
     rest/RestServer.h
     rest/StaticContent.h
+    rest/WebsocketPublisher.h
   )
   list(APPEND TIDEMASTER_SOURCES
     rest/JsonImage.cpp
@@ -163,9 +164,10 @@ if(TIDE_ENABLE_REST_INTERFACE)
     rest/RestLogger.cpp
     rest/RestServer.cpp
     rest/StaticContent.cpp
+    rest/WebsocketPublisher.cpp
   )
   # Servus PUBLIC because servus::Serializable is a base class of public headers
-  list(APPEND TIDEMASTER_LINK_LIBRARIES PUBLIC Servus PRIVATE ZeroEQHTTP)
+  list(APPEND TIDEMASTER_LINK_LIBRARIES PUBLIC Servus PRIVATE ZeroEQHTTP Qt5::WebSockets)
 endif()
 
 common_library(TideMaster)

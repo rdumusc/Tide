@@ -80,6 +80,7 @@ endif()
 
 common_find_package(ZeroEQ)
 if(TARGET ZeroEQ)
+  common_find_package(Qt5WebSockets REQUIRED)
   option(TIDE_ENABLE_REST_INTERFACE "Enable REST interface using ZeroEQ" ON)
 endif()
 

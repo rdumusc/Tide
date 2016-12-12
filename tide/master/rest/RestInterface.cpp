@@ -46,6 +46,7 @@
 #include "RestLogger.h"
 #include "RestServer.h"
 #include "StaticContent.h"
+#include "WebsocketPublisher.h"
 
 #include <tide/master/version.h>
 
@@ -82,6 +83,7 @@ public:
         : httpServer{ port }
         , options{ options_ }
         , sizeProperty{ config.getTotalSize() }
+        , publisher{ quint16(port + 1) }
     {
         auto& server = httpServer.get();
         server.handleGET( "tide/version", tide::Version::getSchema(),
@@ -111,6 +113,7 @@ public:
     JsonSize sizeProperty;
     std::unique_ptr<RestLogger> logContent;
     std::unique_ptr<JsonImage> image;
+    WebsocketPublisher publisher;
 };
 
 RestInterface::RestInterface( const int port, OptionsPtr options,
@@ -161,6 +164,7 @@ void RestInterface::setImage( const QImage image )
     if( _impl->image )
     {
         _impl->image->set( image );
+        _impl->publisher.publish( image );
         return;
     }
 
