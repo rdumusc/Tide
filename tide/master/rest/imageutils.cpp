@@ -37,44 +37,16 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#include "JsonImage.h"
-
 #include "imageutils.h"
-#include "jsonschema.h"
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
+#include <QBuffer>
 
-QJsonObject _makeJsonObject( const QImage& image )
+QString imageutils::toBase64( const QImage& image )
 {
-    QJsonObject obj;
-    obj.insert( "data", imageutils::toBase64( image ));
-    return obj;
-}
-
-JsonImage::JsonImage( const std::string& name, const QImage& image )
-    : _name( name )
-    , _image( image )
-{}
-
-void JsonImage::set( const QImage& image )
-{
-    _image = image;
-}
-
-std::string JsonImage::getTypeName() const
-{
-    return _name;
-}
-
-std::string JsonImage::getSchema() const
-{
-    return jsonschema::create( "ImageJPEG", _makeJsonObject( _image ),
-                               "View of the display wall" );
-}
-
-std::string JsonImage::_toJSON() const
-{
-    return QJsonDocument{ _makeJsonObject( _image ) }.toJson().toStdString();
+    QByteArray data;
+    QBuffer buffer{ &data };
+    buffer.open( QIODevice::WriteOnly );
+    image.save( &buffer, "JPG" );
+    buffer.close();
+    return QString::fromLatin1( data.toBase64( ));
 }

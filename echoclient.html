@@ -1,5 +1,6 @@
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>WebSocket Echo Client</title>
     </head>
     <body>
@@ -16,7 +17,7 @@
             <input type="text" id="inputText" onkeydown="if(event.keyCode==13)sendMessage();"/>
             <button onClick="sendMessage();">Send</button>
         </p>
-        <img id="stream" src="file:///home/dumusc/Desktop/475.JPEG" />
+        <img id="stream" />
 
         <script type="text/javascript">
             var debugTextArea = document.getElementById("debugTextArea");
@@ -49,18 +50,11 @@
                         debug("CONNECTED");
                     };
                     websocket.onclose = function (evt) {
+                        document.getElementById('stream').src = "";
                         debug("DISCONNECTED");
                     };
                     websocket.onmessage = function (event) {
-                        var blob = event.data;
-                        var reader = new FileReader();
-                        reader.onloadend = function() {
-                            var data = "data:image/jpeg;base64,"+reader.result;
-                            var image = document.getElementById('stream');
-                            image.src = data;
-                        };
-                        reader.readAsBinaryString(blob);
-
+                        document.getElementById('stream').src = event.data;
                         //console.log( "Message received :", event.data );
                         //debug( event.data);
                     };

@@ -39,25 +39,17 @@
 
 #include "WebsocketPublisher.h"
 
+#include "imageutils.h"
+
 #include <QtWebSockets/qwebsocketserver.h>
 #include <QtWebSockets/qwebsocket.h>
 
 #include <QDebug>
-#include <QBuffer>
-#include <QPixmap>
 
 namespace
 {
-QByteArray _toJpeg( const QImage& image )
-{
-    QByteArray data;
-    QBuffer buffer{ &data };
-    buffer.open( QIODevice::WriteOnly );
-    image.save( &buffer, "JPG" );
-    buffer.close();
-    return data;
-}
 const QSize maxSize = { 512, 512 };
+const QString jpegHeader = { "data:image/jpeg;base64," };
 }
 
 QT_USE_NAMESPACE
@@ -87,10 +79,11 @@ WebsocketPublisher::~WebsocketPublisher()
 
 void WebsocketPublisher::publish( const QImage image )
 {
-    const auto jpeg = _toJpeg( image.scaled( maxSize, Qt::KeepAspectRatio ));
-    const auto message = jpeg.toBase64();
+    const auto img = image.scaled( maxSize, Qt::KeepAspectRatio );
+    const auto jpeg = imageutils::toBase64( img );
+    const auto message = jpegHeader + jpeg;
     for( auto client : _clients )
-        client->sendBinaryMessage( message );
+        client->sendTextMessage( message );
 }
 
 void WebsocketPublisher::onNewConnection()

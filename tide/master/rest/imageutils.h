@@ -37,44 +37,25 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#include "JsonImage.h"
+#ifndef IMAGEUTILS_H
+#define IMAGEUTILS_H
 
-#include "imageutils.h"
-#include "jsonschema.h"
+#include <QImage>
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-
-QJsonObject _makeJsonObject( const QImage& image )
+/**
+ * Image utilities.
+ */
+namespace imageutils
 {
-    QJsonObject obj;
-    obj.insert( "data", imageutils::toBase64( image ));
-    return obj;
+
+/**
+ * Create a JPEG base64-encoded string representation of an image.
+ *
+ * @param image the source image
+ * @return the base64 string ready for use in html
+ */
+QString toBase64( const QImage& image );
+
 }
 
-JsonImage::JsonImage( const std::string& name, const QImage& image )
-    : _name( name )
-    , _image( image )
-{}
-
-void JsonImage::set( const QImage& image )
-{
-    _image = image;
-}
-
-std::string JsonImage::getTypeName() const
-{
-    return _name;
-}
-
-std::string JsonImage::getSchema() const
-{
-    return jsonschema::create( "ImageJPEG", _makeJsonObject( _image ),
-                               "View of the display wall" );
-}
-
-std::string JsonImage::_toJSON() const
-{
-    return QJsonDocument{ _makeJsonObject( _image ) }.toJson().toStdString();
-}
+#endif

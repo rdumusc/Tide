@@ -143,6 +143,7 @@ set(TIDEMASTER_INCLUDE_NAME tide/master)
 
 if(TIDE_ENABLE_REST_INTERFACE)
   list(APPEND TIDEMASTER_PUBLIC_HEADERS
+    rest/imageutils.h
     rest/JsonImage.h
     rest/JsonOptions.h
     rest/jsonschema.h
@@ -155,6 +156,7 @@ if(TIDE_ENABLE_REST_INTERFACE)
     rest/WebsocketPublisher.h
   )
   list(APPEND TIDEMASTER_SOURCES
+    rest/imageutils.cpp
     rest/JsonImage.cpp
     rest/JsonOptions.cpp
     rest/jsonschema.cpp
