@@ -129,6 +129,12 @@ else:
     # It does nothing in that case, but the (now deprecated) "--bind-to-none"
     # was the default anyways.
 
+# forcefully disable touch point compression to ensure every touch point
+# update is received on the QML side.
+# See undocumented QML_NO_TOUCH_COMPRESSION env variable in
+# <qt5-source>/qtdeclarative/src/quick/items/qquickwindow.cpp
+QT_TOUCH_ENV = EXPORT_ENV_VAR.format('QML_NO_TOUCH_COMPRESSION', '1')
+
 # Form the application parameters list
 TIDE_PARAMS = '--config ' + TIDE_CONFIG_FILE
 # Note that the "session" arg is reserved by Qt so "sessionfile" is used instead
@@ -164,6 +170,7 @@ try:
             display = os.environ["DISPLAY"]
         else:
             display = master_elem.get('display')
+        headless = master_elem.get('headless').lower() == 'true'
 
     if host is None:
         host = 'localhost'
@@ -183,10 +190,13 @@ try:
 
     export_display = EXPORT_ENV_VAR.format('DISPLAY', display)
     environment = '%s %s %s' % (MPI_SPECIAL_FLAGS, export_display, node_host)
+    if headless:
+        environment = '%s %s' % (QT_TOUCH_ENV, environment)
     mastercmd = '%s -np 1 %s%s %s' % (environment, VGLRUN_BIN, TIDEMASTER_BIN, TIDE_PARAMS)
     runcommands.append(mastercmd)
 
     # add a separate 'forker' process on the same host as the master process
+    environment = '%s %s %s' % (MPI_SPECIAL_FLAGS, export_display, node_host)
     forkercmd = '%s -np 1 %s %s' % (environment, TIDEFORKER_BIN, TIDE_PARAMS)
 
     # parse the wall process elements
