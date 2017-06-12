@@ -3,6 +3,8 @@ Changelog {#changelog}
 
 # Release 1.4 (git 1.4-dev)
 
+* [162](https://github.com/BlueBrain/Tide/issues/162):
+  Movies and pixel streams can be rendered at 60 fps (up from 30 fps).
 * [151](https://github.com/BlueBrain/Tide/issues/151):
   Added support for playing stereo 3D movies.
 * [147](https://github.com/BlueBrain/Tide/issues/147):
