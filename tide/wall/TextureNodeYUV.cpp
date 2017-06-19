@@ -45,6 +45,7 @@
 
 #include <QOpenGLBuffer>
 #include <QOpenGLContext>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLFunctions>
 #include <QQuickWindow>
 #include <QSGSimpleMaterialShader>
@@ -108,6 +109,9 @@ struct YUVState
     std::unique_ptr<QOpenGLBuffer> backPboY;
     std::unique_ptr<QOpenGLBuffer> backPboU;
     std::unique_ptr<QOpenGLBuffer> backPboV;
+
+    GLsync frontSyncObj = nullptr;
+    GLsync backSyncObj = nullptr;
 };
 
 /**
@@ -238,6 +242,18 @@ void TextureNodeYUV::swap()
         _deletePbos();
 }
 
+bool TextureNodeYUV::hasPendingUpload() const
+{
+    auto state = _getMaterialState(_node);
+    if (!state->frontSyncObj)
+        return false;
+
+    GLint isSignaled = 0;
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glGetSynciv(state->frontSyncObj, GL_SYNC_STATUS, 1, NULL, &isSignaled);
+    return isSignaled != GL_SIGNALED;
+}
+
 bool TextureNodeYUV::_needTextureChange() const
 {
     auto state = _getMaterialState(_node);
@@ -281,6 +297,9 @@ void TextureNodeYUV::_uploadToBackPbos(const Image& image)
     textureUtils::upload(image, 0, *state->backPboY);
     textureUtils::upload(image, 1, *state->backPboU);
     textureUtils::upload(image, 2, *state->backPboV);
+
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    state->backSyncObj = gl->glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }
 
 void TextureNodeYUV::_copyFrontPbosToTextures()
@@ -297,4 +316,9 @@ void TextureNodeYUV::_swapPbos()
     std::swap(state->frontPboY, state->backPboY);
     std::swap(state->frontPboU, state->backPboU);
     std::swap(state->frontPboV, state->backPboV);
+
+    std::swap(state->frontSyncObj, state->backSyncObj);
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glDeleteSync(state->backSyncObj);
+    state->backSyncObj = nullptr;
 }

@@ -116,8 +116,10 @@ void Tile::updateBackTexture(ImagePtr image)
         return;
     }
     _image = image;
-    emit readyToSwap(shared_from_this());
     QQuickItem::update();
+
+    if (!_hasPendingUpload)
+        emit readyToSwap(shared_from_this());
 }
 
 void Tile::setSizePolicy(const Tile::SizePolicy policy)
@@ -166,6 +168,10 @@ QSGNode* Tile::_updateTextureNode(QSGNode* oldNode)
         node = new NodeT(window(), _type == TextureType::Dynamic);
         emit requestNextFrame(shared_from_this());
     }
+
+    _hasPendingUpload = node->hasPendingUpload();
+    if (_hasPendingUpload)
+        qDebug() << "!!!!!!!! _cannotSwap !!!!!!!!!";
 
     if (_image)
     {

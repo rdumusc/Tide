@@ -143,6 +143,7 @@ private:
     QRect _nextCoord;
     ImagePtr _image;
     bool _firstImageUploaded = false;
+    bool _hasPendingUpload = false;
 
     bool _showBorder = false;
     QuadLineNode* _border = nullptr; // Child QObject

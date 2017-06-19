@@ -80,6 +80,8 @@ public:
     /** Swap the PBOs and update the texture with the back PBO's contents. */
     void swap();
 
+    bool hasPendingUpload() const;
+
 private:
     QQuickWindow* _window = nullptr;
     bool _dynamicTexture = false;
