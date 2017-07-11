@@ -1,7 +1,7 @@
 /*********************************************************************/
-/* Copyright (c) 2016-2017, EPFL/Blue Brain Project                  */
-/*                          Pawel Podhajski <pawel.podhajski@epfl.ch>*/
-/*                          Raphael Dumusc <raphael.dumusc@epfl.ch>  */
+/* Copyright (c) 2017, EPFL/Blue Brain Project                       */
+/*                     Pawel Podhajski <pawel.podhajski@epfl.ch>     */
+/*                     Raphael Dumusc <raphael.dumusc@epfl.ch>       */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -38,67 +38,59 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#ifndef RESTWINDOWS_H
-#define RESTWINDOWS_H
+#include "FileBrowser.h"
 
-#include "RestServer.h"
-#include "scene/DisplayGroup.h"
+#include "json.h"
 
-#include <zeroeq/http/request.h>
-#include <zeroeq/http/response.h>
+#include <QDir>
+#include <QUrl>
 
-#include <QFuture>
-
-#include <future>
-
-/**
- * Exposes the windows in a display group in JSON format.
- *
- * This class also maintains a cache of thumbnails for all windows. The
- * thumbnails are generated asynchronously when window are added.
- *
- * Example client usage:
- * GET /api/windows
- * => 200 { "windows": [ {"title": "Title", "uuid": "abcd", ... } ] }
- *
- * GET /api/windows/abcd/thumbnail
- * => 200 data:image/png;base64----IMAGE DATA----
- */
-class RestWindows
+namespace
 {
-public:
-    /**
-     * Construct a JSON list of windows exposed by REST interface.
-     *
-     * @param displayGroup DisplayGroup to expose.
-     */
-    RestWindows(const DisplayGroup& displayGroup);
+QJsonObject _toJsonObject(const QFileInfo& entry)
+{
+    return QJsonObject{{"name", entry.fileName()}, {"dir", entry.isDir()}};
+}
 
-    /**
-     * Get the detailed list of all windows.
-     *
-     * @return JSON response containing the list of all winodws.
-     */
-    std::future<zeroeq::http::Response> getWindowList(
-        const zeroeq::http::Request&) const;
+QJsonArray _toJsonArray(const QFileInfoList& list)
+{
+    QJsonArray array;
+    for (const auto& entry : list)
+        array.append(_toJsonObject(entry));
+    return array;
+}
+}
 
-    /**
-     * Get information about a specific window (currently thumbnail only).
-     *
-     * @param request GET request to the url "endpoint/${uuid}/thumbnail".
-     * @return base64 encoded image on success, 204 if the thumbnail is not
-     *         ready yet.
-     */
-    std::future<zeroeq::http::Response> getWindowInfo(
-        const zeroeq::http::Request& request) const;
+FileBrowser::FileBrowser(const QString& baseDir, const QStringList& filters)
+    : _baseDir{baseDir}
+    , _filters{filters}
+{
+}
 
-private:
-    const DisplayGroup& _displayGroup;
-    QMap<QString, QFuture<std::string>> _thumbnailCache;
+std::future<zeroeq::http::Response> FileBrowser::list(
+    const zeroeq::http::Request& request)
+{
+    using namespace zeroeq::http;
+    auto path = QString::fromStdString(request.path);
+    QUrl url;
+    url.setPath(path, QUrl::StrictMode);
+    path = url.path();
 
-    void _cacheThumbnail(ContentWindowPtr contentWindow);
-    std::future<zeroeq::http::Response> _getThumbnail(
-        const QString& uuid) const;
-};
+    const QString fullpath = _baseDir + "/" + path;
+    const QDir absolutePath(fullpath);
+    if (!absolutePath.canonicalPath().startsWith(_baseDir))
+        return make_ready_response(Code::BAD_REQUEST);
 
-#endif
+    if (!absolutePath.exists())
+        return make_ready_response(Code::NO_CONTENT);
+
+    const auto body = json::toString(_toJsonArray(_contents(fullpath)));
+    return make_ready_response(Code::OK, body, "application/json");
+}
+
+QFileInfoList FileBrowser::_contents(const QDir& directory) const
+{
+    const auto filters = QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot;
+    const auto sortFlags = QDir::DirsFirst | QDir::IgnoreCase;
+    return directory.entryInfoList(_filters, filters, sortFlags);
+}

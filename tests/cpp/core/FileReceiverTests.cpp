@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE(testUnsupportedFileType)
 {
     FileReceiver fileReceiver;
 
-    const auto request = _makeFileRequest("wall.xyz");
-    const auto response = fileReceiver.prepareUpload(request).get();
+    const auto url = _makeFileRequest("wall.xyz");
+    const auto response = fileReceiver.prepareUpload(url).get();
     BOOST_CHECK_EQUAL(response.code, 405);
 }
 
@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE(testOnlyFileExtensionWithNoName)
 {
     FileReceiver fileReceiver;
 
-    const auto request = _makeFileRequest(".png");
-    const auto response = fileReceiver.prepareUpload(request).get();
+    const auto url = _makeFileRequest(".png");
+    const auto response = fileReceiver.prepareUpload(url).get();
     BOOST_CHECK_EQUAL(response.code, 405);
 }
 

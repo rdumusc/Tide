@@ -50,7 +50,7 @@
 
 #include <memory>
 
-class RestInterface;
+class RestServer;
 class WebkitAuthenticationHelper;
 class WebkitHtmlSelectReplacer;
 
@@ -102,7 +102,7 @@ private:
     QWebView _webView;
     std::unique_ptr<WebkitAuthenticationHelper> _authenticationHelper;
     std::unique_ptr<WebkitHtmlSelectReplacer> _selectReplacer;
-    std::unique_ptr<RestInterface> _restInterface;
+    std::unique_ptr<RestServer> _restServer;
 
     QTimer _timer;
     QMutex _mutex;

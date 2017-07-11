@@ -1,6 +1,7 @@
 /*********************************************************************/
-/* Copyright (c) 2016, EPFL/Blue Brain Project                       */
-/*                     Raphael Dumusc <raphael.dumusc@epfl.ch>       */
+/* Copyright (c) 2016-2017, EPFL/Blue Brain Project                  */
+/*                          Pawel Podhajski <pawel.podhajski@epfl.ch>*/
+/*                          Raphael Dumusc <raphael.dumusc@epfl.ch>  */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -37,30 +38,62 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#ifndef JSONOPTIONS_H
-#define JSONOPTIONS_H
+#ifndef APPCONTROLLER_H
+#define APPCONTROLLER_H
 
+#include "JsonRpc.h"
 #include "types.h"
 
-#include <servus/serializable.h>
+#include <QObject>
 
 /**
- * Exposes the application's Options in JSON format through the REST interface.
+ * Remote controller for the application using JSON-RPC.
  */
-class JsonOptions : public servus::Serializable
+class AppController : public QObject
 {
-public:
-    /** Constructor. */
-    explicit JsonOptions(OptionsPtr options);
+    Q_OBJECT
 
-    std::string getTypeName() const final;
-    std::string getSchema() const final;
+public:
+    /**
+     * Construct an application controller.
+     *
+     * @param config the application configuration.
+     */
+    AppController(const MasterConfiguration& config);
+
+    /** @copydoc JsonRpc::process */
+    std::string process(const std::string& request)
+    {
+        return _rpc.process(request);
+    }
+
+signals:
+    /** Open a content. */
+    void open(QString uri, const QPointF coords, promisePtr promise);
+
+    /** Load a session. */
+    void load(QString uri, promisePtr promise);
+
+    /** Save a session to the given file. */
+    void save(QString uri, promisePtr promise);
+
+    /** Browse a website. */
+    void browse(QString uri);
+
+    /** Open a whiteboard. */
+    void openWhiteboard();
+
+    /** Take a screenshot. */
+    void takeScreenshot(QString filename);
+
+    /** Power off the screens. */
+    void powerOff();
+
+    /** Exit the application. */
+    void exit();
 
 private:
-    std::string _toJSON() const final;
-    bool _fromJSON(const std::string& json) final;
-
-    OptionsPtr _options;
+    JsonRpc _rpc;
 };
 
 #endif

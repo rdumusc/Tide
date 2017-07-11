@@ -92,6 +92,7 @@ class Image;
 class ImageSource;
 class ImagePyramidDataSource;
 class InactivityTimer;
+class LoggingUtility;
 class Markers;
 class MasterConfiguration;
 class MovieContent;

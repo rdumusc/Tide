@@ -34,10 +34,10 @@ Rectangle {
             width: Style.menuWidth * root.width
             height: root.height
             demoItemVisible: demoServiceUrl && demoServiceImageFolder && demoServiceDeflectHost
-            onClearSession: sendRestCommand("clear", "");
-            onStartWebbrowser: sendRestCommand("browse", "");
-            onPoweroffScreens: sendRestCommand("poweroff", "");
-            onStartWhiteboard: sendRestCommand("whiteboard", "");
+            onClearSession: sendJsonRpcCommand("controller", "clear");
+            onStartWebbrowser: sendJsonRpcCommand("application", "browse", "");
+            onPoweroffScreens: sendJsonRpcCommand("application", "poweroff");
+            onStartWhiteboard: sendJsonRpcCommand("application", "whiteboard");
             onShowFilesPanel: centralWidget.sourceComponent = fileBrowser
             onShowSessionsPanel: centralWidget.sourceComponent = sessionsBrowser
             onShowSaveSessionPanel: centralWidget.sourceComponent = saveSessionPanel
@@ -62,7 +62,7 @@ Rectangle {
     Component {
         id: fileBrowser
         FileBrowser {
-            onItemSelected: sendRestCommand("open", file);
+            onItemSelected: sendJsonRpcCommand("application", "open", file);
             rootfolder: rootFilesFolder
             nameFilters: filesFilter
             listViewMode: useListViewMode
@@ -73,9 +73,7 @@ Rectangle {
     Component {
         id: sessionsBrowser
         FileBrowser {
-            onItemSelected: {
-                sendRestCommand("load", file);
-            }
+            onItemSelected: sendJsonRpcCommand("application", "load", file);
             rootfolder: rootSessionsFolder
             nameFilters: ["*.dcx"]
             listViewMode: useListViewMode
@@ -88,7 +86,7 @@ Rectangle {
         SavePanel {
             rootfolder: rootSessionsFolder
             nameFilters: ["*.dcx"]
-            onSaveSession: sendRestCommand("save", filename)
+            onSaveSession: sendJsonRpcCommand("application", "save", file);
             listViewMode: useListViewMode
             onListViewModeChanged: useListViewMode = listViewMode
         }
@@ -98,7 +96,7 @@ Rectangle {
         id: optionsPanel
         OptionsPanel {
             onButtonClicked: sendRestOption(optionName, value)
-            onExitClicked: sendRestCommand("exit", "")
+            onExitClicked: sendJsonRpcCommand("application", "exit")
             onRefreshOptions: getRestOptions(updateCheckboxes)
         }
     }
@@ -112,27 +110,45 @@ Rectangle {
         }
     }
 
-    function sendRestCommand(action, file, callback) {
-        sendRestData(action, "uri", file, callback);
+    function sendJsonRpcCommand(endpoint, action, uri) {
+        var obj = new Object;
+        obj.jsonrpc = "2.0";
+        obj.method = action;
+        if (typeof uri !== "undefined") {
+            var params = new Object;
+            params.uri = uri;
+            obj.params = params;
+        }
+        sendRestData(endpoint, "POST", JSON.stringify(obj));
+    }
+
+    function makeJson(key, value) {
+        var obj = new Object;
+        obj[key] = value;
+        return JSON.stringify(obj);
     }
 
     function sendRestOption(optionName, value) {
-        sendRestData("options", optionName, value);
+        sendRestData("options", "PUT", makeJson(optionName, value));
     }
 
-    function sendRestData(action, key, value, callback) {
+    function sendRestData(action, method, payload, callback) {
         var request = new XMLHttpRequest();
         var url = "http://"+restHost+":"+restPort+"/tide/"+action;
-        var payload = typeof(value) === 'string' ? '{ "'+key+'" : "'+value+'" }'
-                                                 : '{ "'+key+'" : '+value+' }';
+
         request.onreadystatechange = function() {
             if (request.readyState === XMLHttpRequest.DONE && request.status == 200) {
                 if (typeof callback !== 'undefined')
                     callback();
             }
         }
-        request.open("PUT", url, true);
-        request.send(payload);
+        request.open(method, url, true);
+        if (payload) {
+            request.send(payload);
+        }
+        else {
+            request.send();
+        }
     }
 
     function getRestOptions(callback) {

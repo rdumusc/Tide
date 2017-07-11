@@ -1,6 +1,6 @@
 /*********************************************************************/
-/* Copyright (c) 2016, EPFL/Blue Brain Project                       */
-/*                     Pawel Podhajski <pawel.podhajski@epfl.ch>     */
+/* Copyright (c) 2017, EPFL/Blue Brain Project                       */
+/*                     Raphael Dumusc <raphael.dumusc@epfl.ch>       */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -37,64 +37,58 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#include "RestLogger.h"
+#ifndef SERIALIZATION_H
+#define SERIALIZATION_H
+
+#include "types.h"
 
 #include "json.h"
-#include "jsonschema.h"
 
-#include <QJsonObject>
+#include <QUuid>
 
-namespace
+/**
+ * Serialize an object as a JSON string.
+ *
+ * @param object to serialize.
+ * @return json string, empty on error.
+ */
+template <typename Obj>
+std::string to_json(const Obj& object)
 {
-QString stateToString(ScreenState state)
-{
-    switch (state)
-    {
-    case ScreenState::ON:
-        return "ON";
-    case ScreenState::OFF:
-        return "OFF";
-    default:
-        return "UNDEF";
-    }
-}
+    return json::toString(to_json_object(object));
 }
 
-QJsonObject _makeJsonObject(const LoggingUtility& logger)
+/**
+ * Deserialize an object from a JSON string.
+ *
+ * @param object to serialize.
+ * @return json string, empty on error.
+ */
+template <typename Obj>
+bool from_json(Obj& object, const std::string& json)
 {
-    const QJsonObject event{{"last_event", logger.getLastInteraction()},
-                            {"last_event_date",
-                             logger.getLastInteractionTime()},
-                            {"count", logger.getInteractionCount()}};
-    const QJsonObject window{{"count", int(logger.getWindowCount())},
-                             {"date_set", logger.getCounterModificationTime()},
-                             {"accumulated_count",
-                              int(logger.getAccumulatedWindowCount())}};
-    const QJsonObject screens{{"state", stateToString(logger.getScreenState())},
-                              {"last_change",
-                               logger.getLastScreenStateChanged()}};
-    return QJsonObject{{"event", event},
-                       {"window", window},
-                       {"screens", screens}};
+    return from_json_object(object, json::toObject(json));
 }
 
-RestLogger::RestLogger(const LoggingUtility& logger)
-    : _logger(logger)
-{
-}
+/** @name JSON serialization of objects. */
+//@{
+QJsonObject to_json_object(ContentWindowPtr window, const DisplayGroup& group);
+QJsonObject to_json_object(const DisplayGroup& group);
+QJsonObject to_json_object(const LoggingUtility& logger);
+QJsonObject to_json_object(const MasterConfiguration& config);
+QJsonObject to_json_object(const Options& options);
+QJsonObject to_json_object(const QSize& size);
+//@}
 
-std::string RestLogger::getTypeName() const
-{
-    return "tide/stats";
-}
+/** @name JSON deserialization of objects. */
+//@{
+bool from_json_object(Options& options, const QJsonObject& object);
+//@}
 
-std::string RestLogger::getSchema() const
-{
-    return jsonschema::create("Stats", _makeJsonObject(_logger),
-                              "Usage statistics of the Tide application");
-}
+/** @name Helpers for QUuid (strip '{}' in JSON form). */
+//@{
+QString url_encode(const QUuid& uuid);
+QUuid url_decode(const QString& uuid);
+//@}
 
-std::string RestLogger::_toJSON() const
-{
-    return json::toString(_makeJsonObject(_logger));
-}
+#endif

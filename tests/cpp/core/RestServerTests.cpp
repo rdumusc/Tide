@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(testServerReturnsSimpleContent)
     RestServer server;
     BOOST_REQUIRE_GT(server.getPort(), 0);
 
-    server.get().handleGET("test", [] { return "Hello World!"; });
+    server.handleGET("test", [] { return "Hello World!"; });
 
     const auto url = QString("http://localhost:%1/test").arg(server.getPort());
     const auto response = sendHttpRequest(url);
