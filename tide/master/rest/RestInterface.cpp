@@ -53,12 +53,12 @@
 
 #include <tide/master/version.h>
 
-#include <zeroeq/http/helpers.h>
+#include <zerozero/helpers.h>
 
 #include <QDir>
 
 using namespace std::placeholders;
-using namespace zeroeq;
+using namespace zerozero;
 
 namespace
 {
@@ -68,8 +68,8 @@ QString _makeAbsPath(const QString& baseDir, const QString& uri)
 }
 
 template <typename T>
-std::future<zeroeq::http::Response> processJsonRpc(
-    T* jsonRpc, const zeroeq::http::Request& request)
+std::future<http::Response> processJsonRpc(T* jsonRpc,
+                                           const http::Request& request)
 {
     const auto body = jsonRpc->process(request.body);
     if (body.empty())
@@ -163,8 +163,10 @@ RestInterface::RestInterface(const int port, OptionsPtr options,
 
     auto& server = _impl->server;
 
-    server.handleGET("tide/version", tide::Version::getSchema(),
-                     &tide::Version::toJSON);
+    server.handle(http::Method::GET, "tide/version", [](const http::Request&) {
+        return http::make_ready_response(http::Code::OK,
+                                         tide::Version::toJSON());
+    });
     server.expose(config, "tide/config");
     server.expose(_impl->size, "tide/size");
     server.expose(*_impl->options, "tide/options");

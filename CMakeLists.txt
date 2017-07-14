@@ -74,9 +74,9 @@ else()
   common_find_package(X11) # for webbrowser unit tests
 endif()
 
-common_find_package(ZeroEQ)
-if(TARGET ZeroEQHTTP)
-  option(TIDE_ENABLE_REST_INTERFACE "Enable REST interface using ZeroEQ" ON)
+common_find_package(ZeroZero)
+if(TARGET ZeroZero)
+  option(TIDE_ENABLE_REST_INTERFACE "Enable REST interface" ON)
 endif()
 
 common_find_package(Qt5SerialPort)
@@ -103,14 +103,10 @@ endif()
 if(TUIO_IS_SUBPROJECT)
   set(TIDE_PACKAGE_CONFLICTS liboscpack-dev liboscpack1)
 endif()
-if(ZeroEQ_IS_SUBPROJECT)
-  set(_cppnetlib_deb libboost-atomic-dev libboost-chrono-dev
-    libboost-date-time-dev libboost-filesystem-dev libboost-program-options-dev
-    libboost-regex-dev libboost-system-dev libboost-thread-dev libssl1.0.0)
-  set(_zeroeq_deb libc6 libzmq5 ${_cppnetlib_deb})
-  list(APPEND TIDE_PACKAGE_CONFLICTS libcppnetlib-dev libcppnetlib0)
+if(ZeroZero_IS_SUBPROJECT)
+  set(_zerozero_deb libwebsockets-dev)
 endif()
-set(TIDE_PACKAGE_DEB_DEPENDS ${_deflect_deb} ${_zeroeq_deb} ${TIDE_DEB_DEPENDS})
+set(TIDE_PACKAGE_DEB_DEPENDS ${_deflect_deb} ${_zerozero_deb} ${TIDE_DEB_DEPENDS})
 include(CommonCPack) # also includes CommonPackageConfig
 
 # Documentation

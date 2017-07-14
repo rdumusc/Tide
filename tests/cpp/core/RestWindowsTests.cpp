@@ -51,7 +51,8 @@
 
 #include "DummyContent.h"
 
-#include <zeroeq/http/response.h>
+#include <zerozero/response.h>
+using namespace zerozero;
 
 #include <QBuffer>
 #include <QByteArray>
@@ -132,7 +133,7 @@ BOOST_AUTO_TEST_CASE(testWindowInfo)
     response = windows.getThumbnail(window->getID()).get();
     BOOST_CHECK_EQUAL(response.code, 200);
     BOOST_CHECK_EQUAL(response.body, _getThumbnail());
-    BOOST_CHECK_EQUAL(response.headers[zeroeq::http::Header::CONTENT_TYPE],
+    BOOST_CHECK_EQUAL(response.headers[http::Header::CONTENT_TYPE],
                       "image/png");
 
     displayGroup->removeContentWindow(window);

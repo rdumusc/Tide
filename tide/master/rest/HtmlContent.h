@@ -41,10 +41,10 @@
 #ifndef HTMLCONTENT_H
 #define HTMLCONTENT_H
 
-#include <zeroeq/http/server.h>
+#include "RestServer.h"
 
 /**
- * Expose html content through a REST API.
+ * Expose html content through an HTTP server.
  */
 class HtmlContent
 {
@@ -53,7 +53,7 @@ public:
      * Construct and expose the html content.
      * @param httpServer used to expose the content
      */
-    HtmlContent(zeroeq::http::Server& httpServer);
+    HtmlContent(RestServer& httpServer);
 };
 
 #endif

@@ -45,6 +45,8 @@
 #include <QDir>
 #include <QUrl>
 
+using namespace zerozero;
+
 namespace
 {
 QJsonObject _toJsonObject(const QFileInfo& entry)
@@ -67,10 +69,9 @@ FileBrowser::FileBrowser(const QString& baseDir, const QStringList& filters)
 {
 }
 
-std::future<zeroeq::http::Response> FileBrowser::list(
-    const zeroeq::http::Request& request)
+std::future<http::Response> FileBrowser::list(const http::Request& request)
 {
-    using namespace zeroeq::http;
+    using namespace http;
     auto path = QString::fromStdString(request.path);
     QUrl url;
     url.setPath(path, QUrl::StrictMode);

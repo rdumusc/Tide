@@ -45,7 +45,8 @@
 #include "scene/WebbrowserContent.h"
 #include "scene/WebbrowserHistory.h"
 
-#ifdef TIDE_USE_ZEROEQ
+#include "config.h"
+#if TIDE_ENABLE_REST_INTERFACE
 #include "rest/RestServer.h"
 #endif
 
@@ -77,7 +78,7 @@ WebkitPixelStreamer::WebkitPixelStreamer(const QSize& webpageSize,
     settings->setAttribute(QWebSettings::LocalStorageEnabled, true);
     settings->setAttribute(QWebSettings::WebGLEnabled, true);
 
-#ifdef TIDE_USE_ZEROEQ
+#if TIDE_ENABLE_REST_INTERFACE
     _restServer.reset(new RestServer);
     _restServer->handlePUT("load", [this](const QString uri) { setUrl(uri); });
 #endif

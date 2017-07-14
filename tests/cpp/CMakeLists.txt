@@ -16,9 +16,7 @@ set(TEST_LIBRARIES
   Qt5::Gui
 )
 
-if(TIDE_ENABLE_REST_INTERFACE AND TARGET ZeroEQHTTP)
-  list(APPEND TEST_LIBRARIES ZeroEQHTTP)
-else()
+if(NOT TIDE_ENABLE_REST_INTERFACE)
   set(EXCLUDE_FROM_TESTS
     core/FileReceiverTests.cpp
     core/JsonOptionsTests.cpp

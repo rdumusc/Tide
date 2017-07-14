@@ -39,26 +39,45 @@
 
 #include "RestServer.h"
 
-#include <zeroeq/uri.h>
-
 RestServer::RestServer()
 {
     _init();
 }
 
 RestServer::RestServer(const int port)
-    : zeroeq::http::Server{zeroeq::URI{QString(":%1").arg(port).toStdString()}}
+    : zerozero::Server{QString(":%1").arg(port).toStdString()}
 {
     _init();
 }
 
-int RestServer::getPort() const
+RestServer::~RestServer()
 {
-    return getURI().getPort();
+    for (auto notifier : _notifiers)
+    {
+        notifier.second->disconnect();
+        notifier.second->deleteLater();
+    }
 }
 
 void RestServer::_init()
 {
-    _socketNotifier.connect(&_socketNotifier, &QSocketNotifier::activated,
-                            [this]() { receive(0 /* non-blocking receive*/); });
+    onNewSocket(getSocketDescriptor());
+}
+
+void RestServer::onNewSocket(const zerozero::SocketDescriptor fd)
+{
+    _notifiers[fd] = new QSocketNotifier(fd, QSocketNotifier::Read);
+
+    QObject::connect(_notifiers.at(fd), &QSocketNotifier::activated,
+                     [this, fd]() { process(fd); });
+}
+
+void RestServer::onDeleteSocket(const zerozero::SocketDescriptor fd)
+{
+    if (!_notifiers[fd])
+        return;
+
+    _notifiers[fd]->disconnect();
+    _notifiers[fd]->deleteLater();
+    _notifiers.erase(fd);
 }

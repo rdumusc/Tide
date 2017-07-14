@@ -40,13 +40,13 @@
 
 #include "HtmlContent.h"
 
-#include <zeroeq/http/helpers.h>
+#include <zerozero/helpers.h>
 
 #include <QFile>
 #include <QMap>
 #include <QStringList>
 
-using namespace zeroeq;
+using namespace zerozero;
 
 namespace
 {
@@ -116,7 +116,7 @@ std::future<http::Response> _makeResponse(const QString& file,
 }
 }
 
-HtmlContent::HtmlContent(http::Server& server)
+HtmlContent::HtmlContent(RestServer& server)
 {
     server.handle(http::Method::GET, "", [](const http::Request&) {
         return _makeResponse("index.html", "text/html");

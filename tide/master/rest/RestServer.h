@@ -40,15 +40,15 @@
 #ifndef RESTSERVER_H
 #define RESTSERVER_H
 
-#include <zeroeq/http/response.h>
-#include <zeroeq/http/server.h>
+#include <zerozero/response.h>
+#include <zerozero/server.h>
 
 #include <QSocketNotifier>
 
 /**
- * A non-blocking REST Server based on ZeroEQ for use in a Qt application.
+ * A Websocket + HTTP Server for use in a Qt application.
  */
-class RestServer : public zeroeq::http::Server
+class RestServer : public zerozero::Server
 {
 public:
     /**
@@ -66,10 +66,7 @@ public:
     explicit RestServer(int port);
 
     /** Stop the server. */
-    ~RestServer() = default;
-
-    /** @return the port of the server. */
-    int getPort() const;
+    ~RestServer();
 
     /**
      * Expose a JSON-serializable object.
@@ -80,7 +77,7 @@ public:
     template <typename Obj>
     bool expose(Obj& object, const std::string& endpoint)
     {
-        using namespace zeroeq::http;
+        using namespace zerozero::http;
         return handle(Method::GET, endpoint, [&object](const Request&) {
             return make_ready_response(Code::OK, to_json(object),
                                        "application/json");
@@ -96,7 +93,7 @@ public:
     template <typename Obj>
     bool subscribe(Obj& object, const std::string& endpoint)
     {
-        using namespace zeroeq::http;
+        using namespace zerozero::http;
         return handle(Method::PUT, endpoint, [&object](const Request& req) {
             const auto success = from_json(object, req.body);
             return make_ready_response(success ? Code::OK : Code::BAD_REQUEST);
@@ -104,8 +101,10 @@ public:
     }
 
 private:
-    QSocketNotifier _socketNotifier{getSocketDescriptor(),
-                                    QSocketNotifier::Read};
+    std::map<zerozero::SocketDescriptor, QSocketNotifier*> _notifiers;
+
+    void onNewSocket(zerozero::SocketDescriptor fd) final;
+    void onDeleteSocket(zerozero::SocketDescriptor fd) final;
     void _init();
 };
 

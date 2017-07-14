@@ -42,7 +42,7 @@
 
 #include "rest/RestServer.h"
 
-#include <zeroeq/uri.h>
+#include <zerozero/helpers.h>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -83,7 +83,10 @@ BOOST_AUTO_TEST_CASE(testServerReturnsSimpleContent)
     RestServer server;
     BOOST_REQUIRE_GT(server.getPort(), 0);
 
-    server.handleGET("test", [] { return "Hello World!"; });
+    using namespace zerozero;
+    server.handle(http::Method::GET, "test", [](const http::Request&) {
+        return http::make_ready_response(http::Code::OK, "Hello World!");
+    });
 
     const auto url = QString("http://localhost:%1/test").arg(server.getPort());
     const auto response = sendHttpRequest(url);

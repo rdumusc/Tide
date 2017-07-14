@@ -43,7 +43,8 @@
 
 #include "types.h"
 
-#include <zeroeq/http/server.h>
+#include <zerozero/helpers.h>
+#include <zerozero/request.h>
 
 #include <QMap>
 #include <QObject>
@@ -67,7 +68,8 @@ class FileReceiver : public QObject
     Q_OBJECT
 
 public:
-    using Response = zeroeq::http::Response;
+    using Response = zerozero::http::Response;
+    using Request = zerozero::http::Request;
 
     /**
      * Prepare the upload of a file via REST Interface.
@@ -77,7 +79,7 @@ public:
      *        coordinates for opening the content.
      * @return JSON response with the url to use for handleUpload() as { url }.
      */
-    std::future<Response> prepareUpload(const zeroeq::http::Request& request);
+    std::future<Response> prepareUpload(const Request& request);
 
     /**
      * Upload a file via REST Interface.
@@ -85,7 +87,7 @@ public:
      * @param request binary PUT request to the url returned by prepareUpload().
      * @return response with appropiate code and status (201 on success).
      */
-    std::future<Response> handleUpload(const zeroeq::http::Request& request);
+    std::future<Response> handleUpload(const Request& request);
 
 signals:
     /** Open the uploaded file at the given position. */
