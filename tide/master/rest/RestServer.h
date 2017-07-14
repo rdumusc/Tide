@@ -42,6 +42,7 @@
 
 #include <zerozero/response.h>
 #include <zerozero/server.h>
+#include <zerozero/helpers.h>
 
 #include <QSocketNotifier>
 
