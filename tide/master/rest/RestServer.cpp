@@ -54,7 +54,7 @@ RestServer::~RestServer()
 {
     for (auto notifier : _notifiers)
     {
-        notifier.second->disconnect();
+        notifier.second->setEnabled(false);
         notifier.second->deleteLater();
     }
 }
@@ -77,7 +77,7 @@ void RestServer::onDeleteSocket(const zerozero::SocketDescriptor fd)
     if (!_notifiers[fd])
         return;
 
-    _notifiers[fd]->disconnect();
+    _notifiers[fd]->setEnabled(false);
     _notifiers[fd]->deleteLater();
     _notifiers.erase(fd);
 }
