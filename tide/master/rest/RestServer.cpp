@@ -61,6 +61,16 @@ RestServer::~RestServer()
 
 void RestServer::_init()
 {
+#ifdef __APPLE__
+    // Notification on read is not enough on OSX, need to refresh periodically.
+    QObject::connect(&_timer, &QTimer::timeout, [this] {
+        for (auto notifier : _notifiers)
+            process(notifier.first, true);
+    });
+    _timer.setSingleShot(false);
+    _timer.setInterval(1);
+    _timer.start();
+#endif
     onNewSocket(getSocketDescriptor());
 }
 

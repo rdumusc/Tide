@@ -45,6 +45,9 @@
 #include <zerozero/helpers.h>
 
 #include <QSocketNotifier>
+#ifdef __APPLE__
+#include <QTimer>
+#endif
 
 /**
  * A Websocket + HTTP Server for use in a Qt application.
@@ -107,6 +110,10 @@ private:
     void onNewSocket(zerozero::SocketDescriptor fd) final;
     void onDeleteSocket(zerozero::SocketDescriptor fd) final;
     void _init();
+
+#ifdef __APPLE__
+    QTimer _timer;
+#endif
 };
 
 #endif
