@@ -40,19 +40,18 @@
 #ifndef RESTSERVER_H
 #define RESTSERVER_H
 
+#include <zerozero/helpers.h>
 #include <zerozero/response.h>
 #include <zerozero/server.h>
-#include <zerozero/helpers.h>
+#include <zerozero/socketListener.h>
 
 #include <QSocketNotifier>
-#ifdef __APPLE__
 #include <QTimer>
-#endif
 
 /**
  * A Websocket + HTTP Server for use in a Qt application.
  */
-class RestServer : public zerozero::Server
+class RestServer : public zerozero::Server, public zerozero::SocketListener
 {
 public:
     /**
@@ -110,10 +109,7 @@ private:
     void onNewSocket(zerozero::SocketDescriptor fd) final;
     void onDeleteSocket(zerozero::SocketDescriptor fd) final;
     void _init();
-
-#ifdef __APPLE__
     QTimer _timer;
-#endif
 };
 
 #endif

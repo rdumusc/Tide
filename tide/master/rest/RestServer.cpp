@@ -39,19 +39,27 @@
 
 #include "RestServer.h"
 
+namespace
+{
+const uint nServiceThreads = 0;
+}
+
 RestServer::RestServer()
+    : zerozero::Server{nServiceThreads}
 {
     _init();
 }
 
 RestServer::RestServer(const int port)
-    : zerozero::Server{QString(":%1").arg(port).toStdString()}
+    : zerozero::Server{QString(":%1").arg(port).toStdString(), nServiceThreads}
 {
     _init();
 }
 
 RestServer::~RestServer()
 {
+    setSocketListener(nullptr);
+
     for (auto notifier : _notifiers)
     {
         notifier.second->setEnabled(false);
@@ -61,17 +69,20 @@ RestServer::~RestServer()
 
 void RestServer::_init()
 {
-#ifdef __APPLE__
-    // Notification on read is not enough on OSX, need to refresh periodically.
-    QObject::connect(&_timer, &QTimer::timeout, [this] {
-        for (auto notifier : _notifiers)
-            process(notifier.first, true);
-    });
-    _timer.setSingleShot(false);
-    _timer.setInterval(1);
-    _timer.start();
-#endif
-    onNewSocket(getSocketDescriptor());
+    if (nServiceThreads == 0)
+    {
+        setSocketListener(this);
+
+        // Notification on read is not enough with libwebsockets >= v2.0
+        // need to help periodically with a timer.
+        QObject::connect(&_timer, &QTimer::timeout, [this] {
+            for (auto notifier : _notifiers)
+                processSocket(notifier.first, true);
+        });
+        _timer.setSingleShot(false);
+        _timer.setInterval(1);
+        _timer.start();
+    }
 }
 
 void RestServer::onNewSocket(const zerozero::SocketDescriptor fd)
