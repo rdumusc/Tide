@@ -40,8 +40,6 @@
 #ifndef RESTSERVER_H
 #define RESTSERVER_H
 
-#include <zerozero/helpers.h>
-#include <zerozero/response.h>
 #include <zerozero/server.h>
 #include <zerozero/socketListener.h>
 

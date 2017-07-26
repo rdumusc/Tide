@@ -43,7 +43,7 @@
 
 #include "scene/DisplayGroup.h"
 
-#include <zerozero/helpers.h>
+#include <zerozero/http/helpers.h>
 
 #include <QFuture>
 #include <QMap>

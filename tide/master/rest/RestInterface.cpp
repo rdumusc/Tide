@@ -53,7 +53,7 @@
 
 #include <tide/master/version.h>
 
-#include <zerozero/helpers.h>
+#include <zerozero/http/helpers.h>
 
 #include <QDir>
 

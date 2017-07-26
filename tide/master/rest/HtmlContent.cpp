@@ -40,7 +40,7 @@
 
 #include "HtmlContent.h"
 
-#include <zerozero/helpers.h>
+#include <zerozero/http/helpers.h>
 
 #include <QFile>
 #include <QMap>

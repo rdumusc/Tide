@@ -51,7 +51,7 @@
 
 #include "DummyContent.h"
 
-#include <zerozero/response.h>
+#include <zerozero/http/response.h>
 using namespace zerozero;
 
 #include <QBuffer>

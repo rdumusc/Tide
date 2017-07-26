@@ -42,7 +42,7 @@
 
 #include "rest/RestServer.h"
 
-#include <zerozero/helpers.h>
+#include <zerozero/http/helpers.h>
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>

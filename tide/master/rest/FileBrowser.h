@@ -41,8 +41,8 @@
 #ifndef FILEBROWSER_H
 #define FILEBROWSER_H
 
-#include <zerozero/helpers.h>
-#include <zerozero/request.h>
+#include <zerozero/http/helpers.h>
+#include <zerozero/http/request.h>
 
 #include <QFileInfoList>
 #include <QStringList>

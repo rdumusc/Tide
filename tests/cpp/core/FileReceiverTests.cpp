@@ -45,8 +45,8 @@
 #include "rest/FileReceiver.h"
 #include "rest/json.h"
 
-#include <zerozero/request.h>
-#include <zerozero/response.h>
+#include <zerozero/http/request.h>
+#include <zerozero/http/response.h>
 
 using namespace zerozero;
 

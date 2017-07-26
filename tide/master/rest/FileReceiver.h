@@ -43,8 +43,8 @@
 
 #include "types.h"
 
-#include <zerozero/helpers.h>
-#include <zerozero/request.h>
+#include <zerozero/http/helpers.h>
+#include <zerozero/http/request.h>
 
 #include <QMap>
 #include <QObject>
