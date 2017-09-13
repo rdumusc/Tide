@@ -122,6 +122,13 @@ public:
         , sessionBrowser{config.getSessionsDir(), QStringList{"*.dcx"}}
         , htmlContent{new HtmlContent(server)}
     {
+        group.connect(&group, &DisplayGroup::modified,
+                      [this](DisplayGroupPtr dispGroup) {
+            server.broadcastText(to_json(*dispGroup));
+        });
+        server.handleText([this](const std::string& message) {
+            return message + "_TIDE_ECHO";
+        });
     }
 
     std::future<http::Response> getWindowInfo(

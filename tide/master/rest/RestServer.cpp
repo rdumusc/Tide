@@ -1,6 +1,6 @@
 /*********************************************************************/
-/* Copyright (c) 2016, EPFL/Blue Brain Project                       */
-/*                     Raphael Dumusc <raphael.dumusc@epfl.ch>       */
+/* Copyright (c) 2016-2017, EPFL/Blue Brain Project                  */
+/*                          Raphael Dumusc <raphael.dumusc@epfl.ch>  */
 /* All rights reserved.                                              */
 /*                                                                   */
 /* Redistribution and use in source and binary forms, with or        */
@@ -42,16 +42,18 @@
 namespace
 {
 const uint nServiceThreads = 0;
+const std::string webserviceProtocolName = "tide";
 }
 
 RestServer::RestServer()
-    : zerozero::Server{nServiceThreads}
+    : zerozero::Server{webserviceProtocolName, nServiceThreads}
 {
     _init();
 }
 
 RestServer::RestServer(const int port)
-    : zerozero::Server{QString(":%1").arg(port).toStdString(), nServiceThreads}
+    : zerozero::Server{QString(":%1").arg(port).toStdString(),
+                       webserviceProtocolName, nServiceThreads}
 {
     _init();
 }
