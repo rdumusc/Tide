@@ -24,6 +24,20 @@ set(TIDE_DEB_DEPENDS python imagemagick libopenmpi-dev openmpi-bin
   libavutil-dev libavformat-dev libavcodec-dev libswscale-dev)
 set(TIDE_PORT_DEPENDS boost ffmpeg mpich-devel qt5)
 
+# extra steps: module load mpi/openmpi-x86_64
+set(TIDE_RPM_BUILD_DEPENDS ninja-build ccache doxygen qt-creator)
+set(TIDE_RPM_DEPENDS openmpi-devel boost-devel
+  qt5-qtbase-devel qt5-qtdeclarative-devel qt5-qtserialport-devel
+  qt5-qtsvg-devel qt5-qtwebkit-devel qt5-qtxmlpatterns-devel
+  qt5-qtx11extras-devel qt5-qtquickcontrols2-devel
+  poppler-glib-devel cairo-devel poppler-qt5-devel
+  librsvg2-devel libtiff-devel)
+set(TIDE_RPM_FUSION_DEPENDS ffmpeg-devel)
+set(DEFLECT_RPM_DEPENDS libjpeg-turbo-devel freeglut-devel
+  libXmu-devel libXi-devel)
+set(ZEROEQ_RPM_DEPENDS zeromq-devel openssl-devel)
+set(SERVUS_RPM_DEPENDS avahi-devel)
+
 include(Common)
 
 common_find_package(Boost REQUIRED COMPONENTS program_options serialization

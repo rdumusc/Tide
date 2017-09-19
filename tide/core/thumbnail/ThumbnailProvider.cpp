@@ -126,6 +126,7 @@ QImage ThumbnailProvider::requestImage(const QString& filename, QSize* size,
 
 #if TIDE_ASYNC_THUMBNAIL_PROVIDER
 #include <QThreadPool>
+#include <functional>
 
 class AsyncImageResponse : public QQuickImageResponse, public QRunnable
 {
