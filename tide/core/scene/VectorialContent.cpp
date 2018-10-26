@@ -63,6 +63,6 @@ qreal VectorialContent::getMaxScale()
 
 void VectorialContent::setMaxScale(const qreal value)
 {
-    if (value > 0.0)
+    if (value >= 1.0)
         _maxScale = value;
 }
