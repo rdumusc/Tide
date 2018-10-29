@@ -124,8 +124,11 @@ public:
     /** @return the preferred dimensions, used to for 1:1 size. */
     QSize getPreferredDimensions() const;
 
-    /** @return the max dimensions, used to constrain resize/scale. */
+    /** @return the max content dimensions, used to constrain resize/scale. */
     virtual QSize getMaxDimensions() const;
+
+    /** @return the max upscaled dimensions, used to constrain resize/scale. */
+    QSizeF getMaxUpscaledDimensions() const;
 
     /** Set the dimensions. */
     void setDimensions(const QSize& dimensions);

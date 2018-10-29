@@ -67,7 +67,10 @@ WindowPtr _makeStreamWindow(const QString& uri, const QSize& size,
     const auto windowType =
         (type == StreamType::LAUNCHER) ? Window::PANEL : Window::DEFAULT;
     static_cast<PixelStreamContent&>(*content).setChannel(channel);
-    return std::make_shared<Window>(std::move(content), windowType);
+    auto window = std::make_shared<Window>(std::move(content), windowType);
+    if (size.isEmpty())
+        window->setCoordinates(QRectF{QPointF(), EMPTY_STREAM_SIZE});
+    return window;
 }
 
 std::set<uint8_t> _findAllChannels(const deflect::server::Frame& frame)
@@ -148,7 +151,6 @@ void PixelStreamWindowManager::openWindow(const uint surfaceIndex,
     auto& group = _scene.getGroup(surfaceIndex);
 
     WindowController controller{*window, group};
-    controller.resize(size.isValid() ? size : EMPTY_STREAM_SIZE);
     controller.moveCenterTo(!pos.isNull() ? pos : group.center());
 
     window->setState(Window::HIDDEN);

@@ -166,9 +166,15 @@ QSize Content::getPreferredDimensions() const
 QSize Content::getMaxDimensions() const
 {
     if (_isMaxSizeSpecified(_sizeHints))
-        return _getMaxSize(_sizeHints) * getMaxScale();
+        return _getMaxSize(_sizeHints);
 
     const auto dimensions = getDimensions();
+    return dimensions.isValid() ? dimensions : UNDEFINED_SIZE;
+}
+
+QSizeF Content::getMaxUpscaledDimensions() const
+{
+    const auto dimensions = getMaxDimensions();
     return dimensions.isValid() ? dimensions * getMaxScale() : UNDEFINED_SIZE;
 }
 

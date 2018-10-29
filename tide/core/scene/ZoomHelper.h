@@ -58,7 +58,12 @@ public:
     QRectF toTilesArea(const QRectF& windowArea,
                        const QSize& tilesSurface) const;
 
+    QSizeF getMaxWindowSize() const;
+    QSizeF getMaxWindowSizeForNativeContentResolution() const;
+
 private:
+    QSizeF _applyZoom(const QSizeF& size) const;
+
     const Window& _window;
 };
 

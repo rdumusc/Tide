@@ -1,5 +1,5 @@
 /*********************************************************************/
-/* Copyright (c) 2016-2018, EPFL/Blue Brain Project                  */
+/* Copyright (c) 2014-2018, EPFL/Blue Brain Project                  */
 /*                          Raphael Dumusc <raphael.dumusc@epfl.ch>  */
 /* All rights reserved.                                              */
 /*                                                                   */
@@ -37,60 +37,44 @@
 /* or implied, of Ecole polytechnique federale de Lausanne.          */
 /*********************************************************************/
 
-#include "geometry.h"
+#ifndef WINDOW_RESIZE_HANDLES_CONTROLLER_H
+#define WINDOW_RESIZE_HANDLES_CONTROLLER_H
 
 #include "types.h"
 
-#include <QTransform>
+#include "scene/Window.h"
 
-namespace geometry
+#include <QObject>
+
+/**
+ * Controller for moving and resizing windows.
+ */
+class WindowResizeHandlesController : public QObject
 {
-QRectF resizeAroundPosition(const QRectF& rect, const QPointF& position,
-                            const QSizeF& size)
-{
-    QTransform transform;
-    transform.translate(position.x(), position.y());
-    transform.scale(size.width() / rect.width(), size.height() / rect.height());
-    transform.translate(-position.x(), -position.y());
+    Q_OBJECT
+    Q_DISABLE_COPY(WindowResizeHandlesController)
 
-    return transform.mapRect(rect);
-}
+public:
+    /**
+     * Create a controller for the resize handles of a window.
+     * @param window the target window.
+     * @param group the group to which the window belongs.
+     */
+    WindowResizeHandlesController(Window& window, const DisplayGroup& group);
 
-QRectF scaleAroundCenter(const QRectF& rect, const qreal factor)
-{
-    QTransform transform;
-    transform.translate(rect.center().x(), rect.center().y());
-    transform.scale(factor, factor);
-    transform.translate(-rect.center().x(), -rect.center().y());
+    /** @name UI resize handle events. */
+    //@{
+    Q_INVOKABLE void startResizing(Window::ResizeHandle handle);
+    Q_INVOKABLE void toggleResizeMode();
+    Q_INVOKABLE void resizeRelative(const QPointF& delta);
+    Q_INVOKABLE void stopResizing();
+    //@}
 
-    return transform.mapRect(rect);
-}
+private:
+    void _constrainAspectRatio(QSizeF& newSize) const;
 
-QSizeF adjustAspectRatio(const QSizeF& size, const QSizeF& referenceSize)
-{
-    const auto mode = size < referenceSize ? Qt::KeepAspectRatio
-                                           : Qt::KeepAspectRatioByExpanding;
-    return referenceSize.scaled(size, mode);
-}
+    Window& _window;
+    const DisplayGroup& _displayGroup;
+};
 
-QSizeF constrain(const QSizeF& size, const QSizeF& min, const QSizeF& max,
-                 const bool keepAspectRatio)
-{
-    if (keepAspectRatio)
-    {
-        if (size < min)
-            return size.scaled(min, Qt::KeepAspectRatioByExpanding);
-
-        if (max.isValid() && size > max)
-            return size.scaled(max, Qt::KeepAspectRatio);
-    }
-    else if (size < min || (max.isValid() && size > max))
-    {
-        return QSizeF{std::max(min.width(),
-                               std::min(size.width(), max.width())),
-                      std::max(min.height(),
-                               std::min(size.height(), max.height()))};
-    }
-    return size;
-}
-}
+#endif
