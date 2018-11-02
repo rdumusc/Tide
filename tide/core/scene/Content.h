@@ -130,6 +130,12 @@ public:
     /** @return the max upscaled dimensions, used to constrain resize/scale. */
     QSizeF getMaxUpscaledDimensions() const;
 
+    /** @return the minimum size defined by the size hints. */
+    QSize getSizeHintsMin() const;
+
+    /** @return the maximum size defined by the size hints. */
+    QSize getSizeHintsMax() const;
+
     /** Set the dimensions. */
     void setDimensions(const QSize& dimensions);
 

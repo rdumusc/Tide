@@ -354,7 +354,6 @@ QSizeF WindowController::_getPreferredDimensions() const
 
 QRectF WindowController::_getCenteredCoordinates(const QSizeF& size) const
 {
-    // centered coordinates on the display group
     auto coord = QRectF{QPointF(), size};
     coord.moveCenter(_group.getCoordinates().center());
     return coord;

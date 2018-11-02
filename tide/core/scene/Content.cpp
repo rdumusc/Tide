@@ -149,10 +149,7 @@ int Content::height() const
 
 QSize Content::getMinDimensions() const
 {
-    if (_isMinSizeSpecified(_sizeHints))
-        return _getMinSize(_sizeHints);
-
-    return UNDEFINED_SIZE;
+    return getSizeHintsMin();
 }
 
 QSize Content::getPreferredDimensions() const
@@ -176,6 +173,18 @@ QSizeF Content::getMaxUpscaledDimensions() const
 {
     const auto dimensions = getMaxDimensions();
     return dimensions.isValid() ? dimensions * getMaxScale() : UNDEFINED_SIZE;
+}
+
+QSize Content::getSizeHintsMin() const
+{
+    return _isMinSizeSpecified(_sizeHints) ? _getMinSize(_sizeHints)
+                                           : UNDEFINED_SIZE;
+}
+
+QSize Content::getSizeHintsMax() const
+{
+    return _isMaxSizeSpecified(_sizeHints) ? _getMaxSize(_sizeHints)
+                                           : UNDEFINED_SIZE;
 }
 
 void Content::setSizeHints(const deflect::SizeHints& sizeHints)
