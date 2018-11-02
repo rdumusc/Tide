@@ -126,11 +126,3 @@ void WindowResizeHandlesController::resizeRelative(const QPointF& delta)
     auto controller = WindowController{_window, _displayGroup};
     controller.resize(fixedPoint, newSize, _window.getResizePolicy());
 }
-
-void WindowResizeHandlesController::_constrainAspectRatio(QSizeF& newSize) const
-{
-    const auto currentSize = _window.getDisplayCoordinates().size();
-    const auto mode = newSize < currentSize ? Qt::KeepAspectRatio
-                                            : Qt::KeepAspectRatioByExpanding;
-    newSize = currentSize.scaled(newSize, mode);
-}

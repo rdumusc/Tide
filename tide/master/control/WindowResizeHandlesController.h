@@ -71,8 +71,6 @@ public:
     //@}
 
 private:
-    void _constrainAspectRatio(QSizeF& newSize) const;
-
     Window& _window;
     const DisplayGroup& _displayGroup;
 };
