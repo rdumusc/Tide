@@ -213,7 +213,8 @@ QSizeF WindowController::getMinSize() const
     if (_targetIsFullscreen())
     {
         const auto size = _getPreferredDimensions();
-        return size.scaled(_group.size(), Qt::KeepAspectRatio);
+        const auto targetSize = size.scaled(_group.size(), Qt::KeepAspectRatio);
+        return std::min(targetSize, getMaxSize());
     }
 
     const auto minContentSize = QSizeF{_window.getContent().getMinDimensions()};

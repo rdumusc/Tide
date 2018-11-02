@@ -263,11 +263,22 @@ BOOST_FIXTURE_TEST_CASE(smallContentMadeFullscreenRespectsMaxContentSize,
 
     BOOST_REQUIRE(content.getMaxDimensions() < wallSize);
 
+    window->setMode(Window::WindowMode::FULLSCREEN);
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
+    BOOST_REQUIRE(window->isFullscreen());
 
-    BOOST_CHECK_EQUAL(window->getCoordinates().size(),
+    BOOST_CHECK_EQUAL(window->getDisplayCoordinates().size(),
                       content.getMaxUpscaledDimensions());
     BOOST_CHECK(!window->getContent().isZoomed());
+
+    // Can't enlarge or reduce the window beyond its maximum size
+    controller.scale(window->getDisplayCoordinates().center(), 5.0);
+    BOOST_CHECK_EQUAL(window->getDisplayCoordinates().size(),
+                      content.getMaxUpscaledDimensions());
+
+    controller.scale(window->getDisplayCoordinates().center(), -5.0);
+    BOOST_CHECK_EQUAL(window->getDisplayCoordinates().size(),
+                      content.getMaxUpscaledDimensions());
 }
 
 BOOST_FIXTURE_TEST_CASE(smallContentWithBigMaxSizeHintsCanBeMadeFullscreen,
