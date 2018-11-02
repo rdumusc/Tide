@@ -46,12 +46,22 @@
 #include "ui.h"
 #include "utils/geometry.h"
 
-#include <algorithm>
+#include <cmath>
 
 namespace
 {
-const qreal FITTING_SIZE_SCALE = 0.9;
-const qreal ONE_PERCENT = 0.01;
+constexpr qreal FITTING_SIZE_SCALE = 0.9;
+constexpr qreal ONE_PERCENT = 0.01;
+constexpr auto INVALID_CONTROLLER_MSG =
+    "ContentController MUST be of class type ZoomController when "
+    "content.canBeZoomed() is true";
+
+Window::ResizePolicy _getResizePolicyForAjustingSize(const Content& content)
+{
+    return content.hasFixedAspectRatio() || content.canBeZoomed()
+               ? Window::ResizePolicy::KEEP_ASPECT_RATIO
+               : Window::ResizePolicy::ADJUST_CONTENT;
+}
 }
 
 WindowController::WindowController(Window& window, const DisplayGroup& group,
@@ -86,10 +96,8 @@ void WindowController::resize(const QPointF& center, QSizeF newSize,
 
     _apply(coordinates);
 
-    auto controller = ContentController::create(_window);
-    auto zoomController = dynamic_cast<ZoomController*>(controller.get());
-    if (zoomController)
-        zoomController->adjustZoomToContentAspectRatio();
+    if (_contentZoomCanBeAdjusted())
+        _adjustZoom();
 }
 
 void WindowController::scale(const QPointF& center, const double pixelDelta)
@@ -111,19 +119,20 @@ void WindowController::scale(const QPointF& center, const QPointF& pixelDelta)
 
 void WindowController::adjustSize(const SizeState state)
 {
+    const auto policy = _getResizePolicyForAjustingSize(_window.getContent());
+
     switch (state)
     {
     case SIZE_1TO1:
-        resize(_getPreferredDimensions(), CENTER,
-               Window::ResizePolicy::ADJUST_CONTENT);
+        resize(_getPreferredDimensions(), CENTER, policy);
         break;
 
     case SIZE_1TO1_FITTING:
     {
         const auto oneToOneSize = _getPreferredDimensions();
         const auto maxSize = _group.size() * FITTING_SIZE_SCALE;
-        resize(std::min<QSizeF>(oneToOneSize, maxSize), CENTER,
-               Window::ResizePolicy::ADJUST_CONTENT);
+        const auto size = geometry::constrain(oneToOneSize, QSizeF(), maxSize);
+        resize(size, CENTER, policy);
     }
     break;
 
@@ -133,7 +142,7 @@ void WindowController::adjustSize(const SizeState state)
 
         auto size =
             geometry::getAdjustedSize(_getPreferredDimensions(), _group);
-        constrainSize(size, Window::ResizePolicy::ADJUST_CONTENT);
+        constrainSize(size, policy);
         size = geometry::constrain(size, QSizeF(), _group.size());
         _apply(_getCenteredCoordinates(size));
     }
@@ -144,7 +153,7 @@ void WindowController::adjustSize(const SizeState state)
         _window.getContent().resetZoom();
 
         auto size = geometry::getExpandedSize(_window.getContent(), _group);
-        constrainSize(size, Window::ResizePolicy::ADJUST_CONTENT);
+        constrainSize(size, policy);
         _apply(_getCenteredCoordinates(size));
     }
     break;
@@ -154,7 +163,7 @@ void WindowController::adjustSize(const SizeState state)
         _window.getContent().resetZoom();
 
         auto size = _getPreferredDimensions();
-        constrainSize(size, Window::ResizePolicy::ADJUST_CONTENT);
+        constrainSize(size, policy);
         _apply(_getCenteredCoordinates(size));
     }
     break;
@@ -286,6 +295,15 @@ void WindowController::_constrainPosition(QRectF& window) const
 
     window.moveTopLeft({std::max(minX, std::min(window.x(), maxX)),
                         std::max(minY, std::min(window.y(), maxY))});
+}
+
+void WindowController::_adjustZoom() const
+{
+    auto controller = ContentController::create(_window);
+    auto zoomController = dynamic_cast<ZoomController*>(controller.get());
+    if (!zoomController)
+        throw std::logic_error(INVALID_CONTROLLER_MSG);
+    zoomController->adjustZoomToContentAspectRatio();
 }
 
 bool WindowController::_mustKeepAspectRatio(const QSizeF& newSize) const

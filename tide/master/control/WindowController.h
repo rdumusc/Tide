@@ -136,6 +136,7 @@ public:
 private:
     void _constrainAspectRatio(QSizeF& newSize) const;
     void _constrainPosition(QRectF& window) const;
+    void _adjustZoom() const;
 
     bool _mustKeepAspectRatio(const QSizeF& newSize) const;
     bool _contentZoomCanBeAdjusted() const;

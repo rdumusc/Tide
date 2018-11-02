@@ -156,6 +156,7 @@ BOOST_FIXTURE_TEST_CASE(testOneToOneSize, TestFixture)
     const auto& coords = window->getCoordinates();
     BOOST_CHECK_EQUAL(coords.size(), CONTENT_SIZE);
     BOOST_CHECK_EQUAL(coords.center(), QPointF(625, 240));
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testOneToOneSizeUsesPreferedSize, TestFixture)
@@ -167,6 +168,7 @@ BOOST_FIXTURE_TEST_CASE(testOneToOneSizeUsesPreferedSize, TestFixture)
     hints.maxHeight = CONTENT_SIZE.height() * 2;
     window->getContent().setSizeHints(hints);
     static_cast<DummyContent&>(window->getContent()).fixedAspectRatio = false;
+    static_cast<DummyContent&>(window->getContent()).zoomable = false;
 
     controller.adjustSize(SIZE_1TO1);
 
@@ -175,6 +177,7 @@ BOOST_FIXTURE_TEST_CASE(testOneToOneSizeUsesPreferedSize, TestFixture)
     BOOST_CHECK_EQUAL(coords.size(),
                       QSizeF(hints.preferredWidth, hints.preferredHeight));
     BOOST_CHECK_EQUAL(coords.center(), QPointF(625, 240));
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testOneToOneFittingSize, TestFixture)
@@ -185,12 +188,25 @@ BOOST_FIXTURE_TEST_CASE(testOneToOneFittingSize, TestFixture)
     const auto& coords = window->getCoordinates();
     BOOST_CHECK_EQUAL(coords.size(), CONTENT_SIZE);
     BOOST_CHECK_EQUAL(coords.center(), QPointF(625, 240));
+    BOOST_CHECK(!window->getContent().isZoomed());
 
     // Big content constrained to 0.9 * wallSize
     window->getContent().setDimensions(2 * wallSize.toSize());
     controller.adjustSize(SIZE_1TO1_FITTING);
     BOOST_CHECK_EQUAL(coords.size(), 0.9 * wallSize);
     BOOST_CHECK_EQUAL(coords.center(), QPointF(625, 240));
+    BOOST_CHECK(!window->getContent().isZoomed());
+
+    // And without zooming the content if the aspect ratio is different
+    const auto bigSize =
+        QSize{4 * wallSize.toSize().width(), 2 * wallSize.toSize().height()};
+    const auto expectedSize =
+        QSizeF{0.9 * wallSize.width(), 0.45 * wallSize.height()};
+    window->getContent().setDimensions(bigSize);
+    controller.adjustSize(SIZE_1TO1_FITTING);
+    BOOST_CHECK_EQUAL(coords.size(), expectedSize);
+    BOOST_CHECK_EQUAL(coords.center(), QPointF(625, 240));
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testSizeLimitsBigContent, TestFixture)
@@ -251,6 +267,7 @@ BOOST_FIXTURE_TEST_CASE(smallContentMadeFullscreenRespectsMaxContentSize,
 
     BOOST_CHECK_EQUAL(window->getCoordinates().size(),
                       content.getMaxUpscaledDimensions());
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(smallContentWithBigMaxSizeHintsCanBeMadeFullscreen,
@@ -273,6 +290,7 @@ BOOST_FIXTURE_TEST_CASE(smallContentWithBigMaxSizeHintsCanBeMadeFullscreen,
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
     BOOST_CHECK_EQUAL(window->getCoordinates(),
                       QRectF(QPointF{0, 125}, QSizeF{1000, 750}));
+    BOOST_CHECK(!window->getContent().isZoomed());
 
     // Always enforce content aspect ratio over preferred size if it is fixed
     hints.preferredWidth = wallSize.width() / 2;
@@ -281,12 +299,14 @@ BOOST_FIXTURE_TEST_CASE(smallContentWithBigMaxSizeHintsCanBeMadeFullscreen,
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
     BOOST_CHECK_EQUAL(window->getCoordinates(),
                       QRectF(QPointF{0, 125}, QSizeF{1000, 750}));
+    BOOST_CHECK(!window->getContent().isZoomed());
 
     // But use preferred size aspect ratio if it can change freely
     static_cast<DummyContent&>(window->getContent()).fixedAspectRatio = false;
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
     BOOST_CHECK_EQUAL(window->getCoordinates(),
                       QRectF(QPointF{0, 0}, wallSize));
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testAspectRatioMinSize, TestFixture)
@@ -397,6 +417,7 @@ BOOST_FIXTURE_TEST_CASE(testSizeHints, TestFixture)
     window->setWidth(CONTENT_SIZE.height() * 2);
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
     _checkFullscreen(coords);
+    BOOST_CHECK(!window->getContent().isZoomed());
 
     // but content aspect ratio is presered if preferred size is inconsitent...
     hints.preferredWidth = CONTENT_SIZE.width();
@@ -406,6 +427,7 @@ BOOST_FIXTURE_TEST_CASE(testSizeHints, TestFixture)
     window->setWidth(CONTENT_SIZE.height() / 2);
     controller.adjustSize(SizeState::SIZE_FULLSCREEN);
     _checkFullscreen(coords);
+    BOOST_CHECK(!window->getContent().isZoomed());
 
     // ...unless content aspect ratio can vary freely
     static_cast<DummyContent&>(window->getContent()).fixedAspectRatio = false;
@@ -414,6 +436,7 @@ BOOST_FIXTURE_TEST_CASE(testSizeHints, TestFixture)
     BOOST_CHECK_EQUAL(coords.y(), 0.0);
     BOOST_CHECK_EQUAL(coords.width(), wallSize.height() / 2);
     BOOST_CHECK_EQUAL(coords.height(), wallSize.height());
+    BOOST_CHECK(!window->getContent().isZoomed());
 }
 
 void _checkFullscreenMax(const QRectF& coords)
@@ -445,7 +468,7 @@ BOOST_FIXTURE_TEST_CASE(testFullScreenSize, ZoomedContentFixture)
     controller.adjustSize(SIZE_FULLSCREEN);
     _checkFullscreen(window.getCoordinates());
     // zoom reset
-    BOOST_CHECK_EQUAL(window.getContent().getZoomRect(), UNIT_RECTF);
+    BOOST_CHECK(!window.getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testFullScreenMaxSize, ZoomedContentFixture)
@@ -453,7 +476,7 @@ BOOST_FIXTURE_TEST_CASE(testFullScreenMaxSize, ZoomedContentFixture)
     controller.adjustSize(SIZE_FULLSCREEN_MAX);
     _checkFullscreenMax(window.getCoordinates());
     // zoom reset
-    BOOST_CHECK_EQUAL(window.getContent().getZoomRect(), UNIT_RECTF);
+    BOOST_CHECK(!window.getContent().isZoomed());
 }
 
 BOOST_FIXTURE_TEST_CASE(testToggleFullScreenMaxSize, ZoomedContentFixture)
