@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python
 """
 Launcher for Tide
 Usage: ./tide --help
@@ -54,7 +54,7 @@ def locate_binary(exec_name):
     if binary is None:
         binary = find_executable(get_osx_path(exec_name))
     if binary is None:
-        print exec_name + " executable not found"
+        print(exec_name + " executable not found")
         exit(-4)
     return binary
 

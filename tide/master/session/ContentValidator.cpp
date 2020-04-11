@@ -113,13 +113,14 @@ bool _validateContent(const WindowPtr& window)
 
 void _validateContents(DisplayGroup& group)
 {
-    auto windows = QVector<WindowPtr>::fromStdVector(group.getWindows());
+    auto windows = QVector<WindowPtr>{group.getWindows().begin(),
+                                      group.getWindows().end()};
 
     QtConcurrent::blockingFilter(windows, _validateContent);
 
-    group.replaceWindows(windows.toStdVector());
+    group.replaceWindows({windows.begin(), windows.end()});
 }
-}
+} // namespace
 
 void ContentValidator::validateContents(Scene& scene)
 {

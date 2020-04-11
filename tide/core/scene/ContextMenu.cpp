@@ -66,7 +66,7 @@ bool ContextMenu::isVisible() const
 
 QStringList ContextMenu::getCopiedUris() const
 {
-    return QStringList::fromStdList(_copiedUris);
+    return QStringList{_copiedUris.begin(), _copiedUris.end()};
 }
 
 void ContextMenu::setVisible(const bool visible)
@@ -81,7 +81,7 @@ void ContextMenu::setVisible(const bool visible)
 
 void ContextMenu::setCopiedUris(const QStringList& copiedUris)
 {
-    auto uris = copiedUris.toStdList();
+    auto uris = std::list<QString>(copiedUris.begin(), copiedUris.end());
     if (_copiedUris == uris)
         return;
 

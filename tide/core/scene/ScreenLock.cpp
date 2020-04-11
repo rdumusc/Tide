@@ -106,7 +106,7 @@ void ScreenLock::cancelStreamAcceptance(const QString uri)
 
 QStringList ScreenLock::getPendingStreams() const
 {
-    return QStringList::fromStdList(_streams);
+    return QStringList{_streams.begin(), _streams.end()};
 }
 
 void ScreenLock::_add(const QString& uri)
